@@ -5,7 +5,8 @@
 - arrrus package version 0.5.13-dev (make sure arrus/lib64 is set in the Path environment variable)
 
 ## How to build the application
-Update
+
+Set valid paths in CMakeLists.txt: https://github.com/pjarosik/pwi_cpp_example/blob/master/CMakeLists.txt#L52-L54
 
 ```
 git clone https://github.com/pjarosik/pwi_cpp_example.git
