@@ -16,7 +16,7 @@ conan install ..
 cmake ..
 cmake --build . --config RelWithDebInfo
 ```
-Then run the built application:
+Then run the application:
 
 ```
 cd RelWithDebInfo
