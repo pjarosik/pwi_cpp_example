@@ -23,3 +23,4 @@ cd RelWithDebInfo
 ./pwi_example.exe
 ```
 
+Top stop the application: To stop the application, press `q` while the window with B-mode is displayed.
