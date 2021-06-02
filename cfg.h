@@ -6,9 +6,8 @@ Session::Handle configureSessionUsingFile(const std::string &path) {
     return ::arrus::session::createSession(settings);
 }
 
-Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
-
-    // --- Configuring probe adapter.
+::arrus::devices::ProbeAdapterSettings::ChannelMapping getEsaote3AdapterChannelMapping(::arrus::ChannelIdx nSystemChannels) {
+    std::cout << "Using Esaote3 adapter-like channel mapping" << std::endl;
     ::arrus::devices::ProbeAdapterSettings::ChannelMapping mapping(nSystemChannels);
     // 1:1 channel mapping between Us4OEMs <-> Probe Adapter:
     // - Us4OEM:0 is connected to channels: [i*32, (i+1)*32), where "i" is even,
@@ -26,18 +25,64 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
         ::arrus::ChannelIdx uCh = i/2 * 32 + paCh%32;
         mapping[paCh] = ProbeAdapterSettings::ChannelAddress(us4oem, uCh);
     }
+    return mapping;
+}
+
+::arrus::devices::ProbeAdapterSettings::ChannelMapping getUltrasonixChannelMapping(::arrus::ChannelIdx nSystemChannels) {
+    std::cout << "Using Ultrasonix adapter channel mapping" << std::endl;
+    std::vector<::arrus::ChannelIdx> channels = {
+        // Us4OEM:0
+        0,  1,  2,  3,  4,  5,  6,  7,
+        8,  9,  10, 11, 12, 13, 14, 15,
+        16, 17, 18, 19, 20, 21, 22, 23,
+        24, 25, 26, 27, 28, 29, 30, 31,
+        // Us4OEM:1
+        63, 62, 61, 60, 59, 58, 57, 56,
+        55, 54, 53, 52, 51, 50, 49, 48,
+        47, 46, 45, 44, 43, 42, 41, 40,
+        39, 38, 37, 36, 35, 34, 33, 32,
+        // Us4OEM:0
+        64, 65, 66, 67, 68, 69, 70, 71,
+        72, 73, 74, 75, 76, 77, 78, 79,
+        80, 81, 82, 83, 84, 85, 86, 87,
+        88, 89, 90, 91, 92, 93, 94, 95,
+        // Us4OEM:1
+        127, 126, 125, 124, 123, 122, 121, 120,
+        119, 118, 117, 116, 115, 114, 113, 112,
+        111, 110, 109, 108, 107, 106, 105, 104,
+        103, 102, 101, 100,  99,  98,  97,  96
+    };
+    std::vector<::arrus::devices::Ordinal> us4oems(nSystemChannels);
+    std::fill(std::begin(us4oems), std::begin(us4oems)+32, 0);
+    std::fill(std::begin(us4oems)+32, std::begin(us4oems)+64, 1);
+    std::fill(std::begin(us4oems)+64, std::begin(us4oems)+96, 0);
+    std::fill(std::begin(us4oems)+96, std::begin(us4oems)+128, 1);
+
+    ::arrus::devices::ProbeAdapterSettings::ChannelMapping mapping;
+    for(int i = 0; i < nSystemChannels; ++i) {
+        mapping.push_back({us4oems[i], channels[i]});
+    }
+    return mapping;
+}
+
+
+Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
+    // --- Configuring probe adapter.
+//    ::arrus::devices::ProbeAdapterSettings::ChannelMapping mapping = getEsaote3AdapterChannelMapping(nSystemChannels);
+    ::arrus::devices::ProbeAdapterSettings::ChannelMapping mapping = getUltrasonixChannelMapping(nSystemChannels);
+
     ProbeAdapterSettings probeAdapterSettings {
-        ProbeAdapterModelId{"us4us", "esaote3"},
+        ProbeAdapterModelId{"acme", "mycustom"},
         (::arrus::ChannelIdx)mapping.size(),
         mapping
     };
 
     // Probe settings.
     ProbeModel probeModel {
-        ProbeModelId{"esaote", "sl1543"},
+        ProbeModelId{"ultrasonix", "l14-5/38"},
         ::arrus::Tuple<ProbeModel::ElementIdxType>({nSystemChannels}),
         // pitch
-        ::arrus::Tuple<double>({0.245e-3}),
+        ::arrus::Tuple<double>({0.3048e-3}),
         // The below sets a constraints on TX frequency values that can be set
         // using arrus libraries.
         ::arrus::Interval<float>(1e6, 20e6),

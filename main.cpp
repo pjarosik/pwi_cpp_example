@@ -36,7 +36,7 @@ constexpr float PI = 3.14159265f;
 constexpr unsigned N_US4OEMS = 2;
 constexpr unsigned US4OEM_N_RX = 32;
 constexpr unsigned SYSTEM_N_RX = N_US4OEMS * US4OEM_N_RX;
-constexpr unsigned N_PROBE_ELEMENTS = 64;
+constexpr unsigned N_PROBE_ELEMENTS = 128;
 
 constexpr float SPEED_OF_SOUND = 1490;
 // TX/RX parameters
@@ -258,7 +258,7 @@ int main() noexcept {
                 []() {std::cout << "An error occurred while processing the data:" << std::endl; mainDisplay.exit();},
                 [] () {std::cout << "RF data buffer overflow occurred. Stopping the system." << std::endl; mainDisplay.exit(); });
 
-        us4r->setVoltage(30);
+        us4r->setVoltage(20);
         session->startScheme();
 
         // Wait until the window is closed.
