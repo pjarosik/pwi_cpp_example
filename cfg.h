@@ -113,7 +113,7 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
         // No analog TGC (empty list means that the analog TGC will be turned off)
         {},
         // Note: make sure that appropriate cut-off is set appropriate for TX frequency band you use
-        35000000,
+        10000000,
         200
     };
 
@@ -130,7 +130,7 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
         hvSettings,
         // No channel masking will be set (?)
         {}, // probe channel masking
-        {{}, {}} // us4OEM channel masking, set separately for each Us4OEM
+        {{}, {}}, // us4OEM channel masking, set separately for each Us4OEM
         // The above masking is used to turn off TX and RX on a selected
         // us4OEM channels for the whole session.
         // This can be useful when you know that some probe elements are
@@ -140,6 +140,8 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
         // otherwise an exception will be thrown.
         // The above condition is in order to reduce the risk of setting
         // incorrect combination of adapter/channel masking.
+        ::arrus::devices::Us4RSettings::ReprogrammingMode::PARALLEL
+//        ::arrus::devices::Us4RSettings::ReprogrammingMode::SEQUENTIAL // The old setting (default value)
     };
     ::arrus::session::SessionSettings sessionSettings{us4RSettings};
     return ::arrus::session::createSession(sessionSettings);

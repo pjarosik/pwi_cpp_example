@@ -45,17 +45,17 @@ constexpr unsigned N_ANGLES = 64;
 constexpr float MIN_ANGLE = -10.0f; // [deg]
 constexpr float MAX_ANGLE = 10.0f; // [deg]
 constexpr unsigned SAMPLE_RANGE_START =  0*1024;
-constexpr unsigned SAMPLE_RANGE_END = 3*1024;
+constexpr unsigned SAMPLE_RANGE_END = 2*1024;
 constexpr float TX_FREQUENCY = 6e6f; // [Hz]
 constexpr float TX_N_PERIODS = 2; // number of cycles
 constexpr unsigned DOWNSAMPLING_FACTOR = 1;
 constexpr float SAMPLING_FREQUENCY = 65e6/DOWNSAMPLING_FACTOR; // [Hz]
 
-constexpr float PRI = 120e-6; // [s]
+constexpr float PRI = 45e-6; // [s]
 // This is the time between consecutive sequence executions ("seuqence repetition interval").
 // If the total PRI for a given sequence is smaller than SRI - the last TX/RX
 // pri will be increased by SRI-sum(PRI)
-constexpr float SRI = 50e-3; // [s]
+constexpr float SRI = 100e-3; // [s]
 
 constexpr unsigned N_SAMPLES = SAMPLE_RANGE_END-SAMPLE_RANGE_START;
 // Use all probe elements for TX/RX
