@@ -105,13 +105,15 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
     };
     // Default RX settings.
     ::arrus::devices::RxSettings rxSettings {
-        24, // attenuation 24 [dB], maximum gain, constant
+        // No Digital TGC
+//        24,
+        std::nullopt,
         // When using the analog TGC, please remember to turn off digital TGC by setting
         // std::nullopt a value above
         // Currently only the below PGA and LNA values are supported by arrus package
         30, 24, // PGA, LNA gain [dB]
-        // No analog TGC (empty list means that the analog TGC will be turned off)
-        {},
+        // Analog TGC (empty list means that the analog TGC will be turned off)
+        getLinearTGCCurve(14, 2e2, SAMPLING_FREQUENCY, SPEED_OF_SOUND, SAMPLE_RANGE_END),
         // Note: make sure that appropriate cut-off is set appropriate for TX frequency band you use
         10000000,
         200
@@ -140,7 +142,7 @@ Session::Handle configureCustomSession(::arrus::ChannelIdx nSystemChannels) {
         // otherwise an exception will be thrown.
         // The above condition is in order to reduce the risk of setting
         // incorrect combination of adapter/channel masking.
-        ::arrus::devices::Us4RSettings::ReprogrammingMode::PARALLEL
+//        ::arrus::devices::Us4RSettings::ReprogrammingMode::PARALLEL
 //        ::arrus::devices::Us4RSettings::ReprogrammingMode::SEQUENTIAL // The old setting (default value)
     };
     ::arrus::session::SessionSettings sessionSettings{us4RSettings};

@@ -22,15 +22,11 @@ using namespace ::arrus::framework;
 #include "common.h"
 // My custom logger, which I register in arrus.
 #include "logging/MyCustomLoggerFactory.h"
-// An example how to configure session (using a file or C++ API)
-#include "cfg.h"
 #include "Display2D.h"
 #include "imaging/Pipeline.cuh"
 
 // Uncomment the below to save acquired channel RF data to 'rf.bin' file.
 //#define DUMP_RF
-// Log timestamps on console.
-#define LOG_TIMESTAMPS
 
 constexpr float PI = 3.14159265f;
 constexpr unsigned N_US4OEMS = 2;
@@ -51,11 +47,11 @@ constexpr float TX_N_PERIODS = 2; // number of cycles
 constexpr unsigned DOWNSAMPLING_FACTOR = 1;
 constexpr float SAMPLING_FREQUENCY = 65e6/DOWNSAMPLING_FACTOR; // [Hz]
 
-constexpr float PRI = 45e-6; // [s]
+constexpr float PRI = 100e-6; // [s]
 // This is the time between consecutive sequence executions ("seuqence repetition interval").
 // If the total PRI for a given sequence is smaller than SRI - the last TX/RX
 // pri will be increased by SRI-sum(PRI)
-constexpr float SRI = 100e-3; // [s]
+constexpr float SRI = 20e-3; // [s]
 
 constexpr unsigned N_SAMPLES = SAMPLE_RANGE_END-SAMPLE_RANGE_START;
 // Use all probe elements for TX/RX
@@ -66,11 +62,51 @@ constexpr unsigned TX_RX_APERTURE_SIZE = N_PROBE_ELEMENTS;
 constexpr unsigned N_FRAMES_PER_ANGLE = TX_RX_APERTURE_SIZE / US4OEM_N_RX;
 constexpr unsigned N_TXS_PER_ANGLE = TX_RX_APERTURE_SIZE / SYSTEM_N_RX;
 
+// An example how to configure session (using a file or C++ API)
+#include "cfg.h"
+
 // An object representing window that displays the data.
 Display2D mainDisplay;
+// If true, the next frame will be
+bool isLogTimestamps = false;
+
+void setLinearTgc(Us4R *us4r);
+
+void setVoltage(Us4R *us4r) {
+    try {
+        unsigned voltage = 5;
+        std::cout << "Please provide the voltage to set [V]" << std::endl;
+        std::cin >> voltage;
+        us4r->setVoltage(voltage);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void setLinearTgc(Us4R *us4r) {
+    try {
+        float tgcStart, tgcSlope;
+        std::cout << "TGC curve start value [dB]" << std::endl;
+        std::cin >> tgcStart;
+        std::cout << "TGC curve slope [dB/m]" << std::endl;
+        std::cin >> tgcSlope;
+        std::vector<float> tgcCurve = getLinearTGCCurve(
+            tgcStart, tgcSlope, SAMPLING_FREQUENCY,
+            SPEED_OF_SOUND, SAMPLE_RANGE_END);
+
+        std::cout << "Applying TGC curve: " << std::endl;
+        for(auto &value: tgcCurve) {
+            std::cout << value << ", ";
+        }
+        std::cout << std::endl;
+        us4r->setTgcCurve(tgcCurve);
+    }
+    catch(const arrus::IllegalArgumentException &e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+    }
+}
 
 // The below functions create PWI TX/RX sequence.
-
 TxRxSequence createPwiSequence(const arrus::devices::ProbeModel &probeModel,
                                const std::vector<float> &angles) {
     // Apertures
@@ -154,9 +190,11 @@ void registerProcessing(
             [&, i = 0](const BufferElement::SharedHandle &ptr) mutable {
                 try {
                     auto* dataPtr = ptr->getData().get<int16_t>();
-#ifdef LOG_TIMESTAMPS
-                    logTimestamps(dataPtr);
-#endif
+
+                    if(isLogTimestamps) {
+                        logTimestamps(dataPtr);
+                        isLogTimestamps = false;
+                    }
 #ifdef DUMP_RF
                     writeDataToFile("rf.bin", (char*)dataPtr, ptr->getSize());
 #endif
@@ -267,8 +305,40 @@ int main() noexcept {
         std::unique_lock<std::mutex> lock(mutex);
         // Here the main thread waits until user presses 'q' button.
         // All the processing and displaying is done by callback threads.
+
+
+
+        char lastChar = 0;
+        while (lastChar != 'q') {
+            std::cout << "Menu: " << std::endl;
+            std::cout << "v - set voltage" << std::endl;
+            std::cout << "t - set linear tgc" << std::endl;
+            std::cout << "p - print timestamps" << std::endl;
+            std::cout << "q - quit" << std::endl;
+            std::cout << "Choose an option and press enter" << std::endl;
+            lastChar = getchar();
+            switch(lastChar) {
+                case 'p':
+                    // Set timestamp
+                    isLogTimestamps = true;
+                    break;
+                case 'v':
+                    // Set voltage
+                    setVoltage(us4r);
+                    break;
+                case 't':
+                    // Set TGC curve (linear)
+                    setLinearTgc(us4r);
+                    break;
+                case 'q':
+                    std::cout << "Stopping application" << std::endl;
+                    break;
+                default:
+                    std::cerr << "Unknown command: " << lastChar << std::endl;
+            }
+        }
+        mainDisplay.close();
         mainDisplay.waitUntilClosed(lock);
-        std::cout << "Stopping the example" << std::endl;
 
         session->stopScheme();
     } catch (const std::exception &e) {
@@ -277,3 +347,4 @@ int main() noexcept {
     }
     return 0;
 }
+

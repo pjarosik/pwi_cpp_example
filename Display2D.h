@@ -8,6 +8,10 @@ public:
     Display2D() = default;
 
     void update(void *inputPtr) {
+        if(isClosed) {
+            windowClosed.notify_all();
+            return;
+        }
         cv::Mat mat(nrows, ncols, inputDataTypeCv, inputPtr);
         if(inputDataTypeCv == CV_32FC2) {
             cv::Mat real(nrows, ncols, CV_32F);
@@ -27,15 +31,14 @@ public:
         }
         // Refresh the window and check if user pressed 'q'.
         int key = waitKey(1);
-        if (key == 'q') {
-            std::cout << "User pressed 'q' button, stopping" << std::endl;
-            windowClosed.notify_all();
-        }
-        std::cout << "Press q to stop the system." << std::endl;
     }
 
     void exit() {
         windowClosed.notify_all();
+    }
+
+    void close() {
+        isClosed = true;
     }
 
     void waitUntilClosed(std::unique_lock<std::mutex> &lock) {
@@ -71,6 +74,7 @@ public:
 
 private:
     unsigned int nrows, ncols;
+    bool isClosed{false};
     size_t inputDataTypeCv;
     std::condition_variable windowClosed;
 };

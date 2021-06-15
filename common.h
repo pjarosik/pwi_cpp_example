@@ -32,5 +32,24 @@ void writeDataToFile(const std::string& path, char* dataPtr, size_t nBytes) {
     file.close();
 }
 
+std::vector<float> getLinearTGCCurve(float tgcStart, float tgcSlope,
+                                     float samplingFrequency,
+                                     float speedOfSound,
+                                     float sampleRangeEnd) {
+    std::vector<float> tgcCurve;
+
+    float startDepth = 300.0f/samplingFrequency*speedOfSound;
+    float endDepth = sampleRangeEnd/samplingFrequency*speedOfSound;
+    float tgcSamplingStep = 150.0f/samplingFrequency*speedOfSound;
+    float currentDepth = startDepth;
+
+    while(currentDepth < endDepth) {
+        float tgcValue = tgcStart+tgcSlope*currentDepth;
+        tgcCurve.push_back(tgcValue);
+        currentDepth += tgcSamplingStep;
+    }
+    return tgcCurve;
+}
+
 
 #endif //RECONSTRUCTION_RATE_TEST__COMMON_H_
