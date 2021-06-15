@@ -58,4 +58,9 @@ target_link_directories(pwi_example PRIVATE ${ARRUS_LIB_PATH})
 target_link_libraries(pwi_example PRIVATE arrus-core arrus-imaging opencv::opencv)
 target_include_directories(pwi_example PRIVATE ${ARRUS_INCLUDE_PATH})
 
+add_executable(async_example async.cpp)
+target_link_directories(async_example PRIVATE ${ARRUS_LIB_PATH})
+target_link_libraries(async_example PRIVATE arrus-core)
+target_include_directories(async_example PRIVATE ${ARRUS_INCLUDE_PATH})
+
 
