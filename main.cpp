@@ -32,26 +32,26 @@ constexpr float PI = 3.14159265f;
 constexpr unsigned N_US4OEMS = 2;
 constexpr unsigned US4OEM_N_RX = 32;
 constexpr unsigned SYSTEM_N_RX = N_US4OEMS * US4OEM_N_RX;
-constexpr unsigned N_PROBE_ELEMENTS = 128;
+constexpr unsigned N_PROBE_ELEMENTS = 192;
 
-constexpr float SPEED_OF_SOUND = 1490;
+constexpr float SPEED_OF_SOUND = 1450;
 // TX/RX parameters
-constexpr unsigned N_ANGLES = 64;
+constexpr unsigned N_ANGLES = 4;
 // TX angles range
 constexpr float MIN_ANGLE = -10.0f; // [deg]
 constexpr float MAX_ANGLE = 10.0f; // [deg]
 constexpr unsigned SAMPLE_RANGE_START =  0*1024;
-constexpr unsigned SAMPLE_RANGE_END = 2*1024;
+constexpr unsigned SAMPLE_RANGE_END = 4*1024;
 constexpr float TX_FREQUENCY = 6e6f; // [Hz]
 constexpr float TX_N_PERIODS = 2; // number of cycles
 constexpr unsigned DOWNSAMPLING_FACTOR = 1;
 constexpr float SAMPLING_FREQUENCY = 65e6/DOWNSAMPLING_FACTOR; // [Hz]
 
-constexpr float PRI = 100e-6; // [s]
+constexpr float PRI = 120e-6; // [s]
 // This is the time between consecutive sequence executions ("seuqence repetition interval").
 // If the total PRI for a given sequence is smaller than SRI - the last TX/RX
 // pri will be increased by SRI-sum(PRI)
-constexpr float SRI = 20e-3; // [s]
+constexpr float SRI = 30e-3; // [s]
 
 constexpr unsigned N_SAMPLES = SAMPLE_RANGE_END-SAMPLE_RANGE_START;
 // Use all probe elements for TX/RX
@@ -67,7 +67,6 @@ constexpr unsigned N_TXS_PER_ANGLE = TX_RX_APERTURE_SIZE / SYSTEM_N_RX;
 
 // An object representing window that displays the data.
 Display2D mainDisplay;
-// If true, the next frame will be
 bool isLogTimestamps = false;
 
 void setLinearTgc(Us4R *us4r);
@@ -187,7 +186,7 @@ void registerProcessing(
     };
 
     OnNewDataCallback callback =
-            [&, i = 0](const BufferElement::SharedHandle &ptr) mutable {
+            [&, processing, i = 0](const BufferElement::SharedHandle &ptr) mutable {
                 try {
                     auto* dataPtr = ptr->getData().get<int16_t>();
 
@@ -316,7 +315,7 @@ int main() noexcept {
             std::cout << "p - print timestamps" << std::endl;
             std::cout << "q - quit" << std::endl;
             std::cout << "Choose an option and press enter" << std::endl;
-            lastChar = getchar();
+	    std::cin >> lastChar;
             switch(lastChar) {
                 case 'p':
                     // Set timestamp
