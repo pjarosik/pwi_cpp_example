@@ -32,7 +32,7 @@ constexpr float PI = 3.14159265f;
 constexpr unsigned N_US4OEMS = 2;
 constexpr unsigned US4OEM_N_RX = 32;
 constexpr unsigned SYSTEM_N_RX = N_US4OEMS * US4OEM_N_RX;
-constexpr unsigned N_PROBE_ELEMENTS = 192;
+constexpr unsigned N_PROBE_ELEMENTS = 128;
 
 constexpr float SPEED_OF_SOUND = 1450;
 // TX/RX parameters
@@ -41,7 +41,7 @@ constexpr unsigned N_ANGLES = 4;
 constexpr float MIN_ANGLE = -10.0f; // [deg]
 constexpr float MAX_ANGLE = 10.0f; // [deg]
 constexpr unsigned SAMPLE_RANGE_START =  0*1024;
-constexpr unsigned SAMPLE_RANGE_END = 4*1024;
+constexpr unsigned SAMPLE_RANGE_END = 3*1024;
 constexpr float TX_FREQUENCY = 6e6f; // [Hz]
 constexpr float TX_N_PERIODS = 2; // number of cycles
 constexpr unsigned DOWNSAMPLING_FACTOR = 1;
