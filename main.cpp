@@ -82,6 +82,62 @@ void setVoltage(Us4R *us4r) {
     }
 }
 
+void setActiveTermination(Us4R *us4r) {
+    try {
+        unsigned short activeTermination = 50;
+        std::cout << "Please provide active termination value [Ohm]" << std::endl;
+        std::cin >> activeTermination;
+        us4r->setActiveTermination(activeTermination);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void setLpfCutoff(Us4R *us4r) {
+    try {
+        unsigned value = 15000000;
+        std::cout << "Please provide LPF cutoff [Hz]" << std::endl;
+        std::cin >> value;
+        us4r->setLpfCutoff(value);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void setDtgc(Us4R *us4r) {
+    try {
+        unsigned short value = 42;
+        std::cout << "Please provide DTGC attenuation [dB]" << std::endl;
+        std::cin >> value;
+        us4r->setTgcCurve({});
+        us4r->setDtgcAttenuation(value);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void setPgaGain(Us4R *us4r) {
+    try {
+        unsigned short value = 30;
+        std::cout << "Please provide PGA gain [dB]" << std::endl;
+        std::cin >> value;
+        us4r->setPgaGain(value);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+void setLnaGain(Us4R *us4r) {
+    try {
+        unsigned short value = 24;
+        std::cout << "Please provide LNA gain [dB]" << std::endl;
+        std::cin >> value;
+        us4r->setLnaGain(value);
+    } catch(const arrus::IllegalArgumentException& e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
 void setLinearTgc(Us4R *us4r) {
     try {
         float tgcStart, tgcSlope;
@@ -98,7 +154,8 @@ void setLinearTgc(Us4R *us4r) {
             std::cout << value << ", ";
         }
         std::cout << std::endl;
-        us4r->setTgcCurve(tgcCurve);
+        us4r->setDtgcAttenuation(std::nullopt);
+        us4r->setTgcCurve(tgcCurve, false);
     }
     catch(const arrus::IllegalArgumentException &e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
@@ -249,9 +306,9 @@ int main() noexcept {
         // that uses ARRUS into try ..catch clauses.
         ::arrus::setLoggerFactory(std::make_shared<MyCustomLoggerFactory>(::arrus::LogSeverity::INFO));
 
-//        auto session = configureSessionUsingFile("C:/Users/Public/us4r.prototxt");
+        auto session = configureSessionUsingFile("C:/Users/Public/us4r.prototxt");
         // Configure custom device. Please refer to cfg.h for more information.
-        auto session = configureCustomSession(N_PROBE_ELEMENTS);
+        // auto session = configureCustomSession(N_PROBE_ELEMENTS);
         auto us4r = (::arrus::devices::Us4R *) session->getDevice("/Us4R:0");
         auto probe = us4r->getProbe(0);
 
@@ -311,13 +368,17 @@ int main() noexcept {
         while (lastChar != 'q') {
             std::cout << "Menu: " << std::endl;
             std::cout << "v - set voltage" << std::endl;
-            std::cout << "t - set linear tgc" << std::endl;
-            std::cout << "p - print timestamps" << std::endl;
+            std::cout << "t - set linear tgc (turns off digital TGC)" << std::endl;
+            std::cout << "a - sets active termination" << std::endl;
+            std::cout << "f - sets LPF cutoff" << std::endl;
+            std::cout << "p - sets PGA gain" << std::endl;
+            std::cout << "l - sets LNA gain" << std::endl;
+            std::cout << "d - sets DTGC attenuation (turns off analog TGC)" << std::endl;
             std::cout << "q - quit" << std::endl;
             std::cout << "Choose an option and press enter" << std::endl;
 	    std::cin >> lastChar;
             switch(lastChar) {
-                case 'p':
+                case 'o':
                     // Set timestamp
                     isLogTimestamps = true;
                     break;
@@ -328,6 +389,21 @@ int main() noexcept {
                 case 't':
                     // Set TGC curve (linear)
                     setLinearTgc(us4r);
+                    break;
+                case 'a':
+                    setActiveTermination(us4r);
+                    break;
+                case 'f':
+                    setLpfCutoff(us4r);
+                    break;
+                case 'd':
+                    setDtgc(us4r);
+                    break;
+                case 'l':
+                    setLnaGain(us4r);
+                    break;
+                case 'p':
+                    setPgaGain(us4r);
                     break;
                 case 'q':
                     std::cout << "Stopping application" << std::endl;
